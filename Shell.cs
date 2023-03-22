@@ -210,7 +210,7 @@ namespace LILO.Shell
             switch (initMode)
             {
                 case ShellMode.Local:
-                    ProcessStartInfo startInfo = new ProcessStartInfo("powershell.exe", command);
+                    ProcessStartInfo startInfo = new ProcessStartInfo("lghcon.exe", command);
                     startInfo.RedirectStandardOutput = true;
                     startInfo.UseShellExecute = false;
                     startInfo.CreateNoWindow = true;
@@ -278,7 +278,7 @@ namespace LILO.Shell
                 case ShellMode.Company:
                     if(!UserCredentialDialog())Console.WriteLine("This mode is not supported on you´re device.");
                     else{
-                        ProcessStartInfo startInfo2 = new ProcessStartInfo("powershell.exe", command);
+                        ProcessStartInfo startInfo2 = new ProcessStartInfo("lghcon.exe", command);
                     startInfo2.RedirectStandardOutput = true;
                     startInfo2.UseShellExecute = false;
                     startInfo2.CreateNoWindow = true;
