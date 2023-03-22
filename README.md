@@ -1,2 +1,4 @@
 # lilo-command-shell
-A Command Shell to operate in a more advanced way with youre LILO Apps
+Its still an internal beta
+[![.NET Core Desktop](https://github.com/JW-Limited/lilo-command-shell/actions/workflows/dotnet-desktop.yml/badge.svg?branch=main)](https://github.com/JW-Limited/lilo-command-shell/actions/workflows/dotnet-desktop.yml)
+
