@@ -10,6 +10,69 @@ using System.Threading.Tasks;
 namespace LILO.Shell.Tests
 {
     [TestClass]
+    public class ShellTests
+    {
+        [TestMethod]
+        public void SearchFile_ValidInput()
+        {
+            // Arrange
+            var dirMedia = "C:/LILO/req/";
+            string command = "search test.laf";
+            string fileName = "test.laf";
+            int userInput = 0;
+
+            // Act
+            var serviceToTest = new TestSearchService(dirMedia);
+            serviceToTest.Search(command);
+            string outputFromConsole = serviceToTest.GetOutputFromConsole();
+
+            // Assert
+            Assert.IsTrue(outputFromConsole.Contains($"The following were found: \n 0: {fileName}"));
+            Assert.IsTrue(outputFromConsole.Contains($"Please enter the number of the file you wish to select:"));
+            Assert.AreEqual(userInput, serviceToTest.SimulateUserInput());
+            Assert.IsTrue(Directory.Exists($"{dirMedia}{fileName.Replace(".laf",".mp3")}"));
+        }
+
+        [TestMethod]
+        public void SearchFile_InvalidInput()
+        {
+            // Arrange
+            var dirMedia = "C:/LILO/req/";
+            string command = "search test.laf";
+            string fileName = "test.laf";
+            int userInput = 10;
+
+            // Act
+            var serviceToTest = new TestSearchService(dirMedia);
+            serviceToTest.Search(command);
+            string outputFromConsole = serviceToTest.GetOutputFromConsole();
+
+            // Assert
+            Assert.IsTrue(outputFromConsole.Contains($"The following were found: \n 0: {fileName}"));
+            Assert.IsTrue(outputFromConsole.Contains($"Please enter the number of the file you wish to select:"));
+            Assert.AreEqual(userInput, serviceToTest.SimulateUserInput());
+            Assert.IsFalse(Directory.Exists($"{dirMedia}{fileName.Replace(".laf",".mp3")}"));
+            Assert.IsTrue(outputFromConsole.Contains($"Invalid selection"));
+        }
+
+        [TestMethod]
+        public void SearchFile_NonexistentInput()
+        {
+            // Arrange
+            var dirMedia = "C:/LILO/req/";
+            string command = "search nonexistentfile.laf";
+
+            // Act
+            var serviceToTest = new TestSearchService(dirMedia);
+            serviceToTest.Search(command);
+            string outputFromConsole = serviceToTest.GetOutputFromConsole();
+
+            // Assert
+            Assert.IsTrue(outputFromConsole.Contains("File not found in the specified directory"));
+        }
+    }
+    
+    [TestClass]
     public class ShellExtentionsTests
     {
         [TestMethod]
