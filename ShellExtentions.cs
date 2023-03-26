@@ -36,6 +36,8 @@ public class ShellExtentions
                             // Create crypto streams for reading and writing
                             using (var cryptoStream = new CryptoStream(destinationFile, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
                             {
+                                encryptor.Padding = PaddingMode.PKCS7;
+
                                 sourceFile.CopyTo(cryptoStream);
                             }
                         }
@@ -70,7 +72,111 @@ public class ShellExtentions
                             // Create crypto streams for reading and writing
                             using (var cryptoStream = new CryptoStream(sourceFile, decryptor.CreateDecryptor(), CryptoStreamMode.Read))
                             {
+                                // Remove padding from the block
+                                decryptor.Padding = PaddingMode.PKCS7;
+                                
                                 cryptoStream.CopyTo(destinationFile);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ShowError(e.Message);
+            }
+        }
+    }
+
+    public class MediaExtentionsv2{
+        public class MyEncoder
+        {
+            public byte[] Encode(FileStream input)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    input.CopyTo(memoryStream);
+                    byte[] fileBytes = memoryStream.ToArray();
+
+                    for (int i=0; i<fileBytes.Length; i++) 
+                    {
+                        fileBytes[i] = (byte)~fileBytes[i];
+                    }
+
+                    return fileBytes;
+                }
+            }
+
+            public byte[] Decode(FileStream input)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    input.CopyTo(memoryStream);
+                    byte[] fileBytes = memoryStream.ToArray();
+
+                    for (int i=0; i<fileBytes.Length; i++) 
+                    {
+                        fileBytes[i] = (byte)~fileBytes[i];
+                    }
+
+                    return fileBytes;
+                }
+            }
+        }   
+
+
+        public static void CreateAudioFormat(string path, string key) 
+        {
+            try
+            {
+                using (var sourceFile = new FileStream(path, FileMode.Open, FileAccess.Read))
+                {
+                    var myEncoder = new MyEncoder();
+                    byte[] encodedBytes = myEncoder.Encode(sourceFile);
+                
+                    using (AesCryptoServiceProvider encryptor = new AesCryptoServiceProvider())
+                    {
+                        encryptor.Key = new Rfc2898DeriveBytes(key, 16).GetBytes(32);
+
+                        using (var destinationFile = new FileStream($"{Path.GetDirectoryName(path)}\\{Path.GetFileNameWithoutExtension(path)}.laf", FileMode.Create, FileAccess.Write))
+                        {
+                            Console.WriteLine($"({$"{Path.GetFileNameWithoutExtension(path)}.laf"}) : Encrypting the audio file...");
+                            using (var cryptoStream = new CryptoStream(destinationFile, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
+                            {
+                                cryptoStream.Write(encodedBytes, 0, encodedBytes.Length);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ShowError(e.Message);
+            }
+        }
+        public static void DecryptAudioFormat(string path, string key)
+        {
+            try
+            {
+                using (var sourceFile = new FileStream(path, FileMode.Open, FileAccess.Read))
+                {
+                    var myDecoder = new MyEncoder();
+                    byte[] decodedBytes = myDecoder.Decode(sourceFile);
+                    
+                    // Create AES instance for decrypting the encrypted audio file
+                    using (AesCryptoServiceProvider encryptor = new AesCryptoServiceProvider())
+                    {
+                        // Create a password and salt from the key
+                        encryptor.Key = new Rfc2898DeriveBytes(key, 16).GetBytes(32);
+
+                        // Create a destination file where the decrypted bytes will be stored
+                        using (var destinationFile = new FileStream($"{Path.GetDirectoryName(path)}\\{Path.GetFileNameWithoutExtension(path)}.mp3", FileMode.Create, FileAccess.Write))
+                        {
+                            Console.WriteLine($"({$"{Path.GetFileNameWithoutExtension(path)}.mp3"}) : Decrypting the audio file...");
+                            // Create crypto streams for reading and writing
+                            using (var cryptoStream = new CryptoStream(destinationFile, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
+                            {
+                                cryptoStream.Write(decodedBytes, 0, decodedBytes.Length);
                             }
                         }
                     }

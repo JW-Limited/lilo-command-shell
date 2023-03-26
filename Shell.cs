@@ -45,6 +45,18 @@ namespace LILO.Shell
             thr.Start();
         }
 
+        public void GiveCommands(ShellMode mod)
+        {
+            Console.WriteLine($"Welcome to the \"{initMode.ToString()}\" LILO Shell!\n");
+            switch (mod)
+            {
+                case ShellMode.Local:
+                    Console.WriteLine("You can use this mode to manage youre Local installed LILO Apps:\r\n\nExample :\r\n\t- lghcon –-config          : \t\tOpens a configer in the Console\r\n\t- lilo install <package>   :\t\tInstalls a Package\r\n\nFull List on github\r\n"); break;
+                case ShellMode.Media:
+                    Console.WriteLine("You can use this mode to deal with any kind of data on your Local/Cloud/Company Server.\r\nCommands:\r\n\t- pull\r\n\t- push\r\n\t- erase\r\n\t- search\r\nExamples and code integration through API on GitHub.\r\n"); break;
+            }
+        }
+
         public async void Run()
         {
             Console.Clear();
@@ -71,6 +83,17 @@ namespace LILO.Shell
                             Console.ForegroundColor = ConsoleColor.Cyan;
                             Console.WriteLine("Succesfull switched.\n");
                             Console.ResetColor();
+
+                            Console.Clear();
+                            switch (initMode)
+                            {
+                                case ShellMode.Local:
+                                    GiveCommands(ShellMode.Local); break;
+                                case ShellMode.Company:
+                                    GiveCommands(ShellMode.Company); break;
+                                case ShellMode.Media:   
+                                    GiveCommands(ShellMode.Media); break;
+                            }
                         }
                         else
                         {
@@ -157,21 +180,23 @@ namespace LILO.Shell
             {
                 Console.ForegroundColor = ConsoleColor.Green; 
                 Console.WriteLine("The following were found: \n");
-                
+                Console.ResetColor();
                 for (int i = 0; i < filesListInDir.Count; i++)
                 {
-                    Thread.Sleep(rnd.Next(1000, 2500));
-                    Console.WriteLine(i + ": " + filesListInDir[i].Replace("C:\\LILO\\req\\",""));
+                    Thread.Sleep(rnd.Next(10, 250));
+                    Console.WriteLine(i + ": " + filesListInDir[i].Replace("C:\\LILO\\req",""));
                 }
-
+                Console.ForegroundColor = ConsoleColor.Green; 
                 Console.WriteLine("Please enter the number of the file you wish to select:");
+                Console.ResetColor();
                 int userInput = Convert.ToInt32(Console.ReadLine());
                 if(userInput >= 0 && userInput < filesListInDir.Count)
                 {
                     string filePath = filesListInDir[userInput];
+                    Console.WriteLine($"Opening {filePath.Replace("C:\\LILO\\req", "")}...");   
                     if(filePath.EndsWith(".laf")){
-                        ShellExtentions.MediaExtentions.DecryptAudioFile(dirMedia + fileName, "liloDev420_audio");
-                        Process.Start("explorer.exe", dirMedia + fileName.Replace(".laf",".mp3"));
+                        ShellExtentions.MediaExtentions.DecryptAudioFile(dirMedia + "\\" +fileName, "liloDev420_audio");
+                        Process.Start("explorer.exe", dirMedia + "\\" + fileName.Replace(".laf",".mp3"));
                     }
                     else{
                         Process.Start("explorer.exe", filePath);
@@ -180,11 +205,9 @@ namespace LILO.Shell
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red; 
-                    Console.WriteLine($"Invalid selection");
+                    Console.WriteLine($"Invalid selection.");
                     Console.ResetColor();
                 }
-
-                Console.ResetColor();
             }
         }
         public void PushFromURL(string url)
@@ -210,7 +233,7 @@ namespace LILO.Shell
             switch (initMode)
             {
                 case ShellMode.Local:
-                    ProcessStartInfo startInfo = new ProcessStartInfo("lghcon.exe", command);
+                    ProcessStartInfo startInfo = new ProcessStartInfo("powershell.exe", command);
                     startInfo.RedirectStandardOutput = true;
                     startInfo.UseShellExecute = false;
                     startInfo.CreateNoWindow = true;
@@ -232,7 +255,13 @@ namespace LILO.Shell
                             Console.ForegroundColor = ConsoleColor.Green;
                             Console.WriteLine($"Found \"{fileName}\" on server.");
                             Console.ResetColor();
-                            ShellExtentions.MediaExtentions.DecryptAudioFile(dirMedia + fileName, "liloDev420_audio");
+                            try{
+                                ShellExtentions.MediaExtentions.DecryptAudioFile(dirMedia + fileName, "liloDev420_audio");
+                            }
+                            catch(Exception ex)
+                            {  
+                                ShellExtentions.MediaExtentionsv2.DecryptAudioFormat(dirMedia + fileName, "liloDev420_audio");
+                            }
                             Process.Start("explorer.exe", dirMedia + fileName.Replace(".laf",".mp3"));
                         }
                         else
@@ -244,6 +273,7 @@ namespace LILO.Shell
                     }
                     if (command.StartsWith("search")){
                         Search(command);
+                        Console.ResetColor();
                     }
                     else if (command.StartsWith("push"))
                     {
@@ -259,14 +289,19 @@ namespace LILO.Shell
 
                         if(!fileName.EndsWith("mp3"))
                         {
-                            File.Copy(fileName, dirImp + "\\" + fileName);
+                            File.Copy(fileName, dirImp + "\\" + Path.GetFileName(fileName));
                             Console.ForegroundColor = ConsoleColor.Cyan; Console.WriteLine($"File succesfully loaded up.(You can access this File from {"imported\\" + fileName})");
                             Console.ResetColor();
                         }
                         else
                         {
                             
-                            ShellExtentions.MediaExtentions.EncryptAudioFile(fileName, "liloDev420_audio");
+                            try{
+                                ShellExtentions.MediaExtentions.EncryptAudioFile(fileName, "liloDev420_audio");
+                            }
+                            catch{
+                                ShellExtentions.MediaExtentionsv2.CreateAudioFormat(fileName, "liloDev420_audio");
+                            }
                             File.Copy(fileName.Replace(".mp3",".laf"), dirMedia + "\\" + Path.GetFileName(fileName.Replace(".mp3",".laf")));
                             Console.ForegroundColor = ConsoleColor.Cyan; Console.WriteLine($"File succesfully loaded up.(You can access this File from {"media\\" + fileName.Replace(".mp3", ".laf")})");
                             Console.ResetColor();
@@ -278,19 +313,19 @@ namespace LILO.Shell
                 case ShellMode.Company:
                     if(!UserCredentialDialog())Console.WriteLine("This mode is not supported on you´re device.");
                     else{
-                        ProcessStartInfo startInfo2 = new ProcessStartInfo("lghcon.exe", command);
-                    startInfo2.RedirectStandardOutput = true;
-                    startInfo2.UseShellExecute = false;
-                    startInfo2.CreateNoWindow = true;
-                    using (Process process = Process.Start(startInfo2))
-                    {
-                        using (StreamReader reader = process.StandardOutput)
+                        ProcessStartInfo startInfo2 = new ProcessStartInfo("powershell.exe", command);
+                        startInfo2.RedirectStandardOutput = true;
+                        startInfo2.UseShellExecute = false;
+                        startInfo2.CreateNoWindow = true;
+                        using (Process process = Process.Start(startInfo2))
                         {
-                            string result = reader.ReadToEnd();
-                            Console.WriteLine(result);
+                            using (StreamReader reader = process.StandardOutput)
+                            {
+                                string result = reader.ReadToEnd();
+                                Console.WriteLine(result);
+                            }
                         }
                     }
-                }
                     break;
             }
         }
