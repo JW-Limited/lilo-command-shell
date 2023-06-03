@@ -1,10 +1,12 @@
-# lilo-command-shell
-Its still an internal beta. But feel free to commit.
+# Music Releases
+Replace this readme with your own information about your project.
 
-[![.NET Core Desktop](https://github.com/JW-Limited/lilo-command-shell/actions/workflows/dotnet-desktop.yml/badge.svg?branch=main)](https://github.com/JW-Limited/lilo-command-shell/actions/workflows/dotnet-desktop.yml) [![CodeQL](https://github.com/JW-Limited/lilo-command-shell/actions/workflows/codeql.yml/badge.svg)](https://github.com/JW-Limited/lilo-command-shell/actions/workflows/codeql.yml)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/d7a27b65-6121-4794-926b-b3a427f13616/deploy-status)](https://app.netlify.com/sites/roaring-mochi-7d0ab9/deploys)
+Start by briefly describing the assignment in a sentence or two. Keep it short and to the point.
 
-## TODO
-- Its not an standalone module up to this day it needs to be done
-- Better error handling.
-- a user friendly ui maybe soon a gui
+## The problem
+
+Describe how you approached to problem, and what tools and techniques you used to solve it. How did you plan? What technologies did you use? If you had more time, what would be next?
+
+## View it live
+
+Every project should be deployed somewhere. Be sure to include the link to the deployed project so that the viewer can click around and see what it's all about.
